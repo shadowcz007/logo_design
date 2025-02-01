@@ -13,19 +13,35 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('text')
 
   // 修改 handleGenerate 函数的实现
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
-      return
+      return;
     }
-    setLoading(true)
     
-    // 模拟API调用延迟
-    setTimeout(() => {
-      const mockResult = generateMockResponse(prompt)
-      setResult(mockResult)
-      setLoading(false)
-    }, 1500)
-  }, [prompt]) // 只依赖 prompt
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api/logo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate logo');
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error('Error:', error);
+      // 可以添加错误提示
+    } finally {
+      setLoading(false);
+    }
+  }, [prompt]);
 
   // 处理输入变化
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
