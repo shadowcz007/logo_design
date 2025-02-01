@@ -45,4 +45,13 @@ export class CreativeDirector extends BaseAgent {
 
     super(prompt);
   }
+
+  async getDirection(designBrief: string): Promise<string> {
+    try {
+      return await this.callChatAPI(designBrief);
+    } catch (error) {
+      console.error('Creative Director Error:', error);
+      throw new Error('Failed to get creative direction');
+    }
+  }
 } 

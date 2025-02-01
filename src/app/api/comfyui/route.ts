@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import WebSocket from 'ws';
 
-async function loadWorkflowJson() {
+async function loadWorkflowJson(text: string) {
   const filePath = path.join(process.cwd(), 'src/lib/workflow/workflow_api.json');
   const fileContent = await fs.readFile(filePath, 'utf8');
   const workflowData = JSON.parse(fileContent);
@@ -14,6 +14,11 @@ async function loadWorkflowJson() {
   // 更新节点3的seed值
   if (workflowData["3"] && workflowData["3"].inputs) {
     workflowData["3"].inputs.seed = randomSeed;
+  }
+
+  // 更新节点6的text值
+  if (workflowData["6"] && workflowData["6"].inputs) {
+    workflowData["6"].inputs.text = text;
   }
   
   return workflowData;
@@ -103,11 +108,13 @@ async function processOutputImages(history: any): Promise<any> {
 
 export async function POST(request: Request) {
   try {
+    const { text } = await request.json();
+    
     // 生成随机的client_id
     const client_id = Math.random().toString(36).substring(2);
     
-    // 加载工作流JSON
-    const workflowData = await loadWorkflowJson();
+    // 加载工作流JSON并更新text
+    const workflowData = await loadWorkflowJson(text);
     
     // 准备请求数据
     const prompt = {

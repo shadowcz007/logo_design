@@ -42,4 +42,16 @@ export class Reviewer extends BaseAgent {
 
     super(prompt);
   }
+
+  async review(designBrief: string, creativeDirection: string, logoUrl: string): Promise<string> {
+    // 限制输入长度
+    const maxLength = 1000; // 每个部分的最大长度
+    const truncatedBrief = designBrief.length > maxLength ? 
+      designBrief.slice(0, maxLength) + '...' : designBrief;
+    const truncatedDirection = creativeDirection.length > maxLength ? 
+      creativeDirection.slice(0, maxLength) + '...' : creativeDirection;
+
+    const prompt = `设计简报：\n${truncatedBrief}\n\n创意方向：\n${truncatedDirection}`;
+    return this.callChatAPI(prompt);
+  }
 } 

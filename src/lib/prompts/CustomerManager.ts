@@ -39,4 +39,13 @@ export class CustomerManager extends BaseAgent {
 
     super(prompt);
   }
+
+  async processRequirement(prompt: string): Promise<string> {
+    try {
+      return await this.callChatAPI(prompt);
+    } catch (error) {
+      console.error('Customer Manager Error:', error);
+      throw new Error('Failed to process customer requirement');
+    }
+  }
 } 

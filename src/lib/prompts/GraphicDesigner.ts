@@ -1,4 +1,5 @@
 import { BaseAgent } from './BaseAgent';
+import { ComfyUIAgent } from './ComfyUIAgent';
 
 export class GraphicDesigner extends BaseAgent {
   constructor() {
@@ -30,5 +31,35 @@ export class GraphicDesigner extends BaseAgent {
 - 确保设计元素的可识别性`;
 
     super(prompt);
+  }
+
+  async generateImage(creativeDirection: string, useComfyUI: boolean = false): Promise<string> {
+    if (useComfyUI) {
+      const comfyAgent = new ComfyUIAgent();
+      const { imageData } = await comfyAgent.generate(creativeDirection);
+      return `data:image/png;base64,${imageData}`;
+    }
+
+    try {
+      const response = await fetch('https://api.siliconflow.cn/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.SILICONFLOW_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "black-forest-labs/FLUX.1-schnell",
+          prompt: `${this.getSystemPrompt()}\n\nDesign based on: ${creativeDirection}`,
+          n: 1,
+          size: "1024x1024"
+        })
+      });
+
+      const data = await response.json();
+      return data.data[0].url;
+    } catch (error) {
+      console.error('Designer Error:', error);
+      throw new Error('Failed to generate logo image');
+    }
   }
 } 
