@@ -8,7 +8,13 @@ const { TextArea } = Input
 
 export default function Home() {
   const [prompt, setPrompt] = useState('')
-  const [result, setResult] = useState<{ description: string; imageUrl: string } | null>(null)
+  const [result, setResult] = useState<{
+    description: string;
+    imageUrl: string;
+    designBrief: any;
+    creativeDirection: any;
+    review: any;
+  } | null>(null)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('text')
 
@@ -83,12 +89,41 @@ export default function Home() {
           animated={false}
           items={[
             {
-              key: 'text',
-              label: '文本描述',
+              key: 'brief',
+              label: '设计简报',
               children: (
                 <div className="min-h-[200px] p-4 bg-gray-50 rounded">
                   {result ? (
-                    <div className="whitespace-pre-line">{result.description}</div>
+                    <div className="prose max-w-none" 
+                         dangerouslySetInnerHTML={{ __html: result.designBrief }} />
+                  ) : (
+                    <div className="text-gray-400">请输入需求并点击生成按钮...</div>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'creative',
+              label: '创意方向',
+              children: (
+                <div className="min-h-[200px] p-4 bg-gray-50 rounded">
+                  {result ? (
+                    <div className="prose max-w-none"
+                         dangerouslySetInnerHTML={{ __html: result.creativeDirection }} />
+                  ) : (
+                    <div className="text-gray-400">请输入需求并点击生成按钮...</div>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'description',
+              label: '设计说明',
+              children: (
+                <div className="min-h-[200px] p-4 bg-gray-50 rounded">
+                  {result ? (
+                    <div className="prose max-w-none"
+                         dangerouslySetInnerHTML={{ __html: result.description }} />
                   ) : (
                     <div className="text-gray-400">请输入需求并点击生成按钮...</div>
                   )}
@@ -97,7 +132,7 @@ export default function Home() {
             },
             {
               key: 'image',
-              label: '图像预览',
+              label: 'Logo预览',
               children: (
                 <div className="min-h-[200px] p-4 bg-gray-50 rounded">
                   {result ? (
@@ -106,6 +141,24 @@ export default function Home() {
                       alt="Logo预览" 
                       className="max-w-full h-auto"
                     />
+                  ) : (
+                    <div className="text-gray-400">请输入需求并点击生成按钮...</div>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'review',
+              label: '设计评审',
+              children: (
+                <div className="min-h-[200px] p-4 bg-gray-50 rounded">
+                  {result ? (
+                    <div className="prose max-w-none"
+                         dangerouslySetInnerHTML={{ 
+                           __html: typeof result.review === 'string' 
+                             ? result.review 
+                             : JSON.stringify(result.review, null, 2)
+                         }} />
                   ) : (
                     <div className="text-gray-400">请输入需求并点击生成按钮...</div>
                   )}
