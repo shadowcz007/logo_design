@@ -19,3 +19,19 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+.ant-tabs-nav {
+  margin-bottom: 16px !important;
+}
+
+.ant-input {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+.ant-tabs-tab {
+  color: var(--foreground) !important;
+}
+
