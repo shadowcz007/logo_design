@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Input, Tabs } from 'antd'
+import { Button, Input, Tabs, Switch } from 'antd'
 import { useState, useCallback } from 'react'
 import { generateMockResponse } from '@/lib/mockData'
 
@@ -8,6 +8,7 @@ const { TextArea } = Input
 
 export default function Home() {
   const [prompt, setPrompt] = useState('')
+  const [useComfyUI, setUseComfyUI] = useState(false)
   const [result, setResult] = useState<{
     description: string;
     imageUrl: string;
@@ -32,7 +33,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ 
+          prompt,
+          useComfyUI
+        }),
       });
 
       if (!response.ok) {
@@ -47,7 +51,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [prompt]);
+  }, [prompt, useComfyUI]);
 
   // 处理输入变化
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -67,15 +71,23 @@ export default function Home() {
             placeholder="请描述您想要的LOGO风格、颜色、元素等..."
             className="mb-4"
           />
-          <Button 
-            type="primary" 
-            block 
-            onClick={handleGenerate}
-            loading={loading}
-            disabled={!prompt.trim()}
-          >
-            生成LOGO
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Switch
+              checked={useComfyUI}
+              onChange={setUseComfyUI}
+              checkedChildren="ComfyUI"
+              unCheckedChildren="默认"
+            />
+            <Button 
+              type="primary" 
+              block 
+              onClick={handleGenerate}
+              loading={loading}
+              disabled={!prompt.trim()}
+            >
+              生成LOGO
+            </Button>
+          </div>
         </div>
       </div>
 

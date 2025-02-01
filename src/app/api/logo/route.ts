@@ -149,7 +149,7 @@ async function reviewDesign(
 // API路由处理函数
 export async function POST(request: Request) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, useComfyUI } = await request.json();
 
     if (!prompt) {
       return NextResponse.json(
@@ -158,28 +158,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. 客户经理处理需求
-    const designBrief = await processCustomerRequirement(prompt);
-    
-    // 2. 创意总监提供方案
-    const creativeDirection = await getCreativeDirection(designBrief);
-    
-    // 3. 设计师生成Logo
-    const logoUrl = await generateLogoImage(creativeDirection);
-    
-    // 4. 审核员评审
-    const review = await reviewDesign(designBrief, creativeDirection, logoUrl);
+    if (useComfyUI) {
+      // 使用 ComfyUI 生成图片
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/comfyui`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('ComfyUI API 调用失败');
+      }
+      
+      const result = await response.json();
+      
+      // 转换结果格式以匹配原有接口
+      const logoResponse: LogoResponse = {
+        description: marked.parse(`# ComfyUI 生成结果\n\n使用 ComfyUI 生成的图片`),
+        imageUrl: `data:image/png;base64,${result.images["9"][0].data}`, // 假设节点8是输出图片的节点
+        designBrief: marked.parse(`# 设计简报\n\n使用 ComfyUI 工作流程生成`),
+        creativeDirection: marked.parse(`# 创意方向\n\n基于 ComfyUI 模型生成`),
+        review: marked.parse(`# 设计评审\n\n由 ComfyUI 自动生成的图片`)
+      };
 
-    // 5. 返回完整结果
-    const response: any = {
-      description: marked.parse(creativeDirection),
-      imageUrl: logoUrl,
-      designBrief: marked.parse(designBrief),
-      creativeDirection: marked.parse(creativeDirection),
-      review: marked.parse(review)
-    };
+      return NextResponse.json(logoResponse);
+    } else {
+      // 原有的生成逻辑
+      const designBrief = await processCustomerRequirement(prompt);
+      const creativeDirection = await getCreativeDirection(designBrief);
+      const logoUrl = await generateLogoImage(creativeDirection);
+      const review = await reviewDesign(designBrief, creativeDirection, logoUrl);
 
-    return NextResponse.json(response);
+      return NextResponse.json({
+        description: marked.parse(creativeDirection),
+        imageUrl: logoUrl,
+        designBrief: marked.parse(designBrief),
+        creativeDirection: marked.parse(creativeDirection),
+        review: marked.parse(review)
+      });
+    }
   } catch (error) {
     console.error('Logo Generation Error:', error);
     return NextResponse.json(
